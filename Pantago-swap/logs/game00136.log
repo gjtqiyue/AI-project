@@ -1,0 +1,21 @@
+# Server version 0.08 running on gjtqiyue:8123
+# Game ID: 136
+# Board class: pentago_swap.PentagoBoard
+# Timeout: 2000
+# First Move Timeout: 30000
+# Date: Sat Mar 30 18:55:48 EDT 2019
+# Player 1: Player-0, '260728557', running on gjtqiyue
+# Player 2: Player-1, '260728557', running on gjtqiyue
+START Player-0 260728557
+START Player-1 260728557
+4 4 TL TR 0
+4 1 TL TR 1
+1 4 TL TR 0
+1 4 TL TR 1
+0 3 TL TR 0
+0 3 TR BL 1
+2 2 TL BL 0
+0 2 TL BR 1
+2 2 BL BR 0
+GAMEOVER WINNER 0
+# Game ended: Sat Mar 30 18:55:52 EDT 2019

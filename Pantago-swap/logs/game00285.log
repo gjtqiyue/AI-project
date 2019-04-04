@@ -1,0 +1,15 @@
+# Server version 0.08 running on 142.157.131.92:8123
+# Game ID: 285
+# Board class: pentago_swap.PentagoBoard
+# Timeout: 2000
+# First Move Timeout: 30000
+# Date: Mon Apr 01 15:04:23 EDT 2019
+# Player 1: Player-0, 'xxx', running on 142.157.131.92
+# Player 2: Player-1, 'Human', running on 142.157.131.92
+START Player-0 xxx
+START Player-1 Human
+4 4 TL TR 0
+1 4 TL BL 1
+4 1 TL TR 0
+1 4 TL TR 1
+1 3 TR BR 0

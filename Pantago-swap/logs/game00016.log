@@ -1,0 +1,22 @@
+# Server version 0.08 running on gjtqiyue:8123
+# Game ID: 16
+# Board class: pentago_swap.PentagoBoard
+# Timeout: 2000
+# First Move Timeout: 30000
+# Date: Fri Mar 29 02:00:41 EDT 2019
+# Player 1: Player-0, 'Human', running on gjtqiyue
+# Player 2: Player-1, '260728557', running on gjtqiyue
+START Player-0 Human
+START Player-1 260728557
+0 0 TR BL 0
+0 2 TR BR 1
+1 1 BL TR 0
+3 3 TL TR 1
+2 5 TL BR 0
+2 1 BL BR 1
+1 1 BL BR 0
+4 0 TL BL 1
+5 2 BR TL 0
+5 4 BL BR 1
+4 3 BR TL 0
+3 5 TL TR 1
