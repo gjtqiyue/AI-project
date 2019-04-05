@@ -401,7 +401,7 @@ public class StudentPlayer extends PentagoPlayer {
 				chainFactor-=2;
 			}
 			if (status[1] == 1 && status[2] == 0) {	// one side is blocked by player but the other side is not
-				//chainFactor-=0.5;
+				//chainFactor=4;
 			}
 			// check for instant swap kill
 			int x = checkPotentialSwapKill(n, dir, board, 3, target);
@@ -421,7 +421,7 @@ public class StudentPlayer extends PentagoPlayer {
 			}
 			
 			if (status[1] > 0) {	//player
-				chainFactor = 2;
+				chainFactor = 0.5;
 			}
 			else if (status[2] == 2) {	//wall
 				chainFactor = 2.5;
@@ -474,11 +474,29 @@ public class StudentPlayer extends PentagoPlayer {
     	for (int i=0; i<list.length; i++) {
 			int _x = list[i][0];
 			int _y = list[i][1];
-			if (board[_x][_y].getStatus(statusIdx)[0] >= (3-num) && board[_x][_y].piece == target) {	// 3 in a row we have defend for minimum 1, 2 to 2
-				count+=1;
-			}
-			else if (board[_x][_y].getStatus(statusIdx)[0] >= (3-num) && board[_x][_y].getStatus(statusIdx)[1] > 0 && board[_x][_y].piece == target) {
-				count+=0.5;
+			switch (num) {
+			case 2:
+				if (board[_x][_y].getStatus(statusIdx)[0] == 2 && board[_x][_y].piece == target) {	// having 2 instance of 2 in a row
+					count+=2;
+				}
+				else if (board[_x][_y].getStatus(statusIdx)[0] == 1 && board[_x][_y].piece == target) {	
+					count+=1;
+				}
+				if (board[_x][_y].getStatus(statusIdx)[1] > 0 && board[_x][_y].piece == target) {
+					count-=1;
+				}
+				break;
+			case 3:
+				if (board[_x][_y].getStatus(statusIdx)[0] >= 2 && board[_x][_y].piece == target) {	// 3 in a row we have defend for minimum 1, 2 to 2
+					count+=2;
+				}
+				else if (board[_x][_y].getStatus(statusIdx)[0] == 1 && board[_x][_y].piece == target) {
+					count+=1;
+				}
+//				if (board[_x][_y].getStatus(statusIdx)[1] > 0 && board[_x][_y].piece == target) {
+//					count-=1;
+//				}
+				break;
 			}
 		}
     	return count;
@@ -491,18 +509,18 @@ public class StudentPlayer extends PentagoPlayer {
     		if (n.yPos == 0 || n.yPos == 3) count = countMatching(verticalLeftCheckList, 1, num, target, board);
     		else if (n.yPos == 1 || n.yPos == 4) count = countMatching(verticalMiddleCheckList, 1, num, target, board);
     		else if (n.yPos == 2 || n.yPos == 5) count = countMatching(verticalRightCheckList, 1, num, target, board);
-    		return count * 5 + 1;
+    		return count * 10 + 1;
     	case Horizontal:
     		if (n.xPos == 0 || n.xPos == 3) count = countMatching(horizontalTopCheckList, 2, num, target, board);
     		else if (n.xPos == 1 || n.xPos == 4) count = countMatching(horizontalMiddleCheckList, 2, num, target, board);
     		else if (n.xPos == 2 || n.xPos == 5) count = countMatching(horizontalBottomCheckList, 2, num, target, board);
-    		return count * 5 + 1;
+    		return count * 10 + 1;
     	case LeftD:
     		count = countMatching(diagonalFirstCheckList, 3, num, target, board);
-    		return count * 5 + 1;
+    		return count * 10 + 1;
     	case RightD:
     		count = countMatching(diagonalFirstCheckList, 4, num, target, board);
-    		return count * 5 + 1;
+    		return count * 10 + 1;
     	default:
     		break;
     	}
@@ -799,15 +817,15 @@ public class StudentPlayer extends PentagoPlayer {
 						while (!Thread.currentThread().isInterrupted()) {
 							if (depth == 2) {
 								optimal = MiniMax(0, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, boardState, null);
-								System.out.println("Value of the move move: " + optimal.value);
-				    	        System.out.println("max " + max_prun + ", min " + min_prun);
-				    	        System.out.println("depth " + depth);
+//								System.out.println("Value of the move move: " + optimal.value);
+//				    	        System.out.println("max " + max_prun + ", min " + min_prun);
+//				    	        System.out.println("depth " + depth);
 							}
 							else {
 								optimal = MiniMax(0, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, boardState, candidateMoves.get(1).move);
-								System.out.println("Value of the move move: " + optimal.value);
-				    	        System.out.println("max " + max_prun + ", min " + min_prun);
-				    	        System.out.println("depth " + depth);
+//								System.out.println("Value of the move move: " + optimal.value);
+//				    	        System.out.println("max " + max_prun + ", min " + min_prun);
+//				    	        System.out.println("depth " + depth);
 							}
 							// the first time we set the optimal as the second
 					        if (depth == 2) {
