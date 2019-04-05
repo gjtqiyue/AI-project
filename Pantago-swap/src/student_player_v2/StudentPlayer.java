@@ -336,6 +336,8 @@ public class StudentPlayer extends PentagoPlayer {
     		}
     	}
     	
+    	
+    	
 //    	System.out.println("Student Board State:");
 //    	StringBuilder sb = new StringBuilder();
 //    	for (int i=0; i<6; i++) {
@@ -364,17 +366,17 @@ public class StudentPlayer extends PentagoPlayer {
     	
     	if (numInARow(n, 4, dir)) {
     		if (status[2] == 2) {chainFactor = 4;}	//all blocked by wall
-    		else if (status[1] == 2) {chainFactor = 7;}	//all blocked by player
+    		else if (status[1] == 2) {chainFactor = 10;}	//all blocked by player
     		else if (status[1] == 1 && status[2] == 1) { 
     			// check if we can swap it
-    			chainFactor = 8;
+    			chainFactor = 12;
     			int x = checkPotentialSwapKill(n, dir, board, 3, target);
     			if (x > 1)
     				swapFactor = x;
     			else
     				swapFactor = 1;
     		} 
-    		else {chainFactor = 10;}
+    		else {chainFactor = 15;}
 			//System.out.println("four in a row:" + chainFactor * centerFactor * swapFactor * baseScore);
 			//markNodes(n.xPos, n.yPos, 4, board, dir);
 		}
@@ -389,14 +391,17 @@ public class StudentPlayer extends PentagoPlayer {
 				centerFactor = 1;
 			}
 			
-			if (status[2] > 0) {
-				chainFactor = 6;
+			if (status[2] > 1) {	// blocked by walls, good
+				chainFactor++;
 			}
-			else if (status[1] > 2) {
-				chainFactor = 4.5;
+			if (status[1] == 0) {	// not blocked by any opponent pieces, not good
+				chainFactor+=2;
 			}
-			else {
-				chainFactor = 5;
+			if (status[1] == 1 && status[2] == 1) {
+				chainFactor-=2;
+			}
+			if (status[1] == 1 && status[2] == 0) {	// one side is blocked by player but the other side is not
+				//chainFactor-=0.5;
 			}
 			// check for instant swap kill
 			int x = checkPotentialSwapKill(n, dir, board, 3, target);
@@ -426,8 +431,10 @@ public class StudentPlayer extends PentagoPlayer {
 			}
 			
 			int x = checkPotentialSwapKill(n, dir, board, 2, target);
-			if (x > 1)
+			if (x > 1) {
+				//System.out.println("Swap kill 2");
 				swapFactor = x;
+			}
 			else
 				swapFactor = 1;
 			//System.out.println("two in a row:" + chainFactor * centerFactor * swapFactor * baseScore);
@@ -463,7 +470,7 @@ public class StudentPlayer extends PentagoPlayer {
     public static int[][] leftDiagonalSecondCheckList = { {1,0},{0,1},{1,3},{0,4},{4,0},{3,1},{4,3},{3,4} };
     
     private int countMatching(int[][] list, int statusIdx, int num, Piece target, Node[][] board) {
-    	int count = 0;
+    	int count = 1;
     	for (int i=0; i<list.length; i++) {
 			int _x = list[i][0];
 			int _y = list[i][1];
@@ -479,24 +486,23 @@ public class StudentPlayer extends PentagoPlayer {
     
     private int checkPotentialSwapKill(Node n, Direction d, Node[][] board, int num, Piece target){
     	int count = 0;
-    	int blocked = 0;
     	switch (d) {
     	case Vertical:
     		if (n.yPos == 0 || n.yPos == 3) count = countMatching(verticalLeftCheckList, 1, num, target, board);
     		else if (n.yPos == 1 || n.yPos == 4) count = countMatching(verticalMiddleCheckList, 1, num, target, board);
     		else if (n.yPos == 2 || n.yPos == 5) count = countMatching(verticalRightCheckList, 1, num, target, board);
-    		return count;
+    		return count * 5 + 1;
     	case Horizontal:
     		if (n.xPos == 0 || n.xPos == 3) count = countMatching(horizontalTopCheckList, 2, num, target, board);
     		else if (n.xPos == 1 || n.xPos == 4) count = countMatching(horizontalMiddleCheckList, 2, num, target, board);
     		else if (n.xPos == 2 || n.xPos == 5) count = countMatching(horizontalBottomCheckList, 2, num, target, board);
-    		return count;
+    		return count * 5 + 1;
     	case LeftD:
     		count = countMatching(diagonalFirstCheckList, 3, num, target, board);
-    		return count;
+    		return count * 5 + 1;
     	case RightD:
     		count = countMatching(diagonalFirstCheckList, 4, num, target, board);
-    		return count;
+    		return count * 5 + 1;
     	default:
     		break;
     	}

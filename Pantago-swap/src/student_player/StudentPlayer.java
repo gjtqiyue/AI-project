@@ -783,15 +783,15 @@ public class StudentPlayer extends PentagoPlayer {
 						while (!Thread.currentThread().isInterrupted()) {
 							if (depth == 2) {
 								optimal = MiniMax(0, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, boardState, null);
-						        System.out.println("Value of the move: " + optimal.value);
-						        System.out.println("max " + max_prun + ", min " + min_prun);
-						        System.out.println("depth " + depth);
+//						        System.out.println("Value of the move: " + optimal.value);
+//						        System.out.println("max " + max_prun + ", min " + min_prun);
+//						        System.out.println("depth " + depth);
 							}
 							else {
 								optimal = MiniMax(0, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, boardState, candidateMoves.get(1));
-						        System.out.println("Value of the move: " + optimal.value);
-						        System.out.println("max " + max_prun + ", min " + min_prun);
-						        System.out.println("depth " + depth);
+//						        System.out.println("Value of the move: " + optimal.value);
+//						        System.out.println("max " + max_prun + ", min " + min_prun);
+//						        System.out.println("depth " + depth);
 							}
 							// the first time we set the optimal as the second
 					        if (depth == 2) {
