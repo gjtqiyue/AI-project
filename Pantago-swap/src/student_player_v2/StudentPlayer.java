@@ -148,9 +148,9 @@ public class StudentPlayer extends PentagoPlayer {
 					board[i][j] = new Node(i, j, boardState.getPieceAt(i,j));
 				}
 			}	
-			double playerScore = evaluatePlayerState(board, myPiece);
+			double playerScore = evaluatePlayerState(board, myPiece, opponentPiece);
 			//System.out.println("Player move eval:" + playerScore);
-			double opponentScore = evaluatePlayerState(board, opponentPiece);
+			double opponentScore = evaluatePlayerState(board, opponentPiece, myPiece);
 			//System.out.println("Oppo move eval:" + opponentScore);
 			score = playerScore - opponentScore;
 			//System.out.println("final score " + score);
@@ -158,7 +158,7 @@ public class StudentPlayer extends PentagoPlayer {
 		}
 	}
     
-    private double evaluatePlayerState(Node[][] board, Piece target) {
+    private double evaluatePlayerState(Node[][] board, Piece player, Piece oppo) {
     	
     	ArrayList<Node> targetPieces = new ArrayList<Node>();
     	
@@ -166,7 +166,7 @@ public class StudentPlayer extends PentagoPlayer {
     	for (int i=0; i<board.length; i++) {
 			for (int j=0; j<board[0].length; j++) {
 				
-				if (board[i][j].piece == target) {
+				if (board[i][j].piece == player) {
 					targetPieces.add(board[i][j]);
 			    	// only look at top three and left
 					// top left
@@ -175,7 +175,7 @@ public class StudentPlayer extends PentagoPlayer {
 						int cur_j = j;
 						// if the next one is blocked
 						if (inRange(cur_i+1) && inRange(cur_j+1)) {
-							if (board[cur_i + 1][cur_j + 1].piece != target && board[cur_i + 1][cur_j + 1].piece != Piece.EMPTY) {
+							if (board[cur_i + 1][cur_j + 1].piece == oppo) {
 								board[cur_i][cur_j].leftDiagonalStatus[1]++;
 							}
 						}
@@ -185,7 +185,7 @@ public class StudentPlayer extends PentagoPlayer {
 						// if top left has the same color
 						Node curNode = board[cur_i][cur_j];
 						Node lastNode = board[cur_i - 1][cur_j - 1];
-						if (lastNode.piece == target) {
+						if (lastNode.piece == player) {
 							int times = lastNode.leftDiagonalStatus[0];
 							for (int k=1; k<times+1; k++) {
 								// go through the node in the line
@@ -213,7 +213,7 @@ public class StudentPlayer extends PentagoPlayer {
 						int cur_j = j;
 						// if the next one is blocked
 						if (inRange(cur_i + 1)) {	//blocked by me
-							if (board[cur_i + 1][cur_j].piece != target && board[cur_i + 1][cur_j].piece != Piece.EMPTY) {
+							if (board[cur_i + 1][cur_j].piece == oppo) {
 								board[cur_i][cur_j].verticalStatus[1]++;
 							}
 						}
@@ -223,7 +223,7 @@ public class StudentPlayer extends PentagoPlayer {
 						// if top left has the same color
 						Node curNode = board[cur_i][cur_j];
 						Node lastNode = board[cur_i - 1][cur_j];
-						if (lastNode.piece == target) {
+						if (lastNode.piece == player) {
 							int times = lastNode.verticalStatus[0];
 							for (int k=1; k<times+1; k++) {
 								// go through the node in the line
@@ -252,7 +252,7 @@ public class StudentPlayer extends PentagoPlayer {
 						int cur_j = j;
 						// if the next one is blocked
 						if (inRange(cur_i + 1) && inRange(cur_j - 1)) {
-							if (board[cur_i + 1][cur_j - 1].piece != target && board[cur_i + 1][cur_j - 1].piece != Piece.EMPTY) {
+							if (board[cur_i + 1][cur_j - 1].piece == oppo) {
 								board[cur_i][cur_j].rightDiagonalStatus[1]++;
 							}
 						}
@@ -262,7 +262,7 @@ public class StudentPlayer extends PentagoPlayer {
 						// if top left has the same color
 						Node curNode = board[cur_i][cur_j];
 						Node lastNode = board[cur_i - 1][cur_j + 1];
-						if (lastNode.piece == target) {
+						if (lastNode.piece == player) {
 							int times = lastNode.rightDiagonalStatus[0];
 							for (int k=1; k<times+1; k++) {
 								// go through the node in the line
@@ -290,7 +290,7 @@ public class StudentPlayer extends PentagoPlayer {
 						int cur_j = j;
 						// if the next one is blocked
 						if (inRange(cur_j + 1)) {	//blocked by me
-							if (board[cur_i][cur_j + 1].piece != target && board[cur_i][cur_j + 1].piece != Piece.EMPTY) {
+							if (board[cur_i][cur_j + 1].piece == oppo) {
 								board[cur_i][cur_j].horizontalStatus[1]++;
 							}
 						}
@@ -300,7 +300,7 @@ public class StudentPlayer extends PentagoPlayer {
 						// if top left has the same color
 						Node curNode = board[cur_i][cur_j];
 						Node lastNode = board[cur_i][cur_j - 1];
-						if (lastNode.piece == target) {
+						if (lastNode.piece == player) {
 							int times = lastNode.horizontalStatus[0];
 							for (int k=1; k<times+1; k++) {
 								// go through the node in the line
@@ -332,7 +332,7 @@ public class StudentPlayer extends PentagoPlayer {
     		for (int i=0; i<4; i++) {
     			Direction dir = Direction.valueOf(i);
     			int[] status = n.getStatus(i+1);
-    			score+=evaluatePiece(n, board, dir, status, target);
+    			score+=evaluatePiece(n, board, dir, status, player, oppo);
     		}
     	}
     	
@@ -357,7 +357,7 @@ public class StudentPlayer extends PentagoPlayer {
     	return score;
     }
     
-    private double evaluatePiece(Node n, Node[][] board, Direction dir, int[] status, Piece target) {
+    private double evaluatePiece(Node n, Node[][] board, Direction dir, int[] status, Piece player, Piece oppo) {
     	double score = 0;
     	double baseScore = 1;
     	double centerFactor = 1;
@@ -370,13 +370,13 @@ public class StudentPlayer extends PentagoPlayer {
     		else if (status[1] == 1 && status[2] == 1) { 
     			// check if we can swap it
     			chainFactor = 12;
-    			int x = checkPotentialSwapKill(n, dir, board, 3, target);
+    			int x = checkPotentialSwapKill(n, dir, board, 3, player);
     			if (x > 1)
     				swapFactor = x;
     			else
     				swapFactor = 1;
     		} 
-    		else {chainFactor = 15;}
+    		else {return 10000;}
 			//System.out.println("four in a row:" + chainFactor * centerFactor * swapFactor * baseScore);
 			//markNodes(n.xPos, n.yPos, 4, board, dir);
 		}
@@ -401,10 +401,10 @@ public class StudentPlayer extends PentagoPlayer {
 				chainFactor-=2;
 			}
 			if (status[1] == 1 && status[2] == 0) {	// one side is blocked by player but the other side is not
-				//chainFactor=4;
+				chainFactor=4;
 			}
 			// check for instant swap kill
-			int x = checkPotentialSwapKill(n, dir, board, 3, target);
+			int x = checkPotentialSwapKill(n, dir, board, 3, player);
 			if (x > 1)
 				swapFactor = x;
 			else
@@ -414,14 +414,14 @@ public class StudentPlayer extends PentagoPlayer {
 		}
 		else if (numInARow(n, 2, dir)) {
 			if (isInTheCenter(n, dir)) {
-				centerFactor = 2;
+				centerFactor = 1;
 			}
 			else {
 				centerFactor = 1;
 			}
 			
 			if (status[1] > 0) {	//player
-				chainFactor = 0.5;
+				chainFactor = 0.2;
 			}
 			else if (status[2] == 2) {	//wall
 				chainFactor = 2.5;
@@ -430,7 +430,7 @@ public class StudentPlayer extends PentagoPlayer {
 				chainFactor = 3;
 			}
 			
-			int x = checkPotentialSwapKill(n, dir, board, 2, target);
+			int x = checkPotentialSwapKill(n, dir, board, 2, player);
 			if (x > 1) {
 				//System.out.println("Swap kill 2");
 				swapFactor = x;
@@ -442,11 +442,19 @@ public class StudentPlayer extends PentagoPlayer {
 		}
 		else if (numInARow(n, 1, dir)) {
 			if (isInTheCenter(n, dir)) {
-				centerFactor = 2;
+				centerFactor = 1;
 			}
 			else {
 				centerFactor = 1;
 			}
+			
+			int x = checkPotentialSwapKill(n, dir, board, 1, player);
+			if (x > 1) {
+				//System.out.println("Swap kill 2");
+				swapFactor = x;
+			}
+			else
+				swapFactor = 1;
 			//System.out.println("one in a row:" + chainFactor * centerFactor * swapFactor * baseScore);
 			//markNodes(n.xPos, n.yPos, 1, board, dir);
 		}
@@ -454,6 +462,7 @@ public class StudentPlayer extends PentagoPlayer {
     	// check for potential instant kill
     	
     	score = chainFactor * centerFactor * swapFactor * baseScore;
+    	if (player == MyPiece(cur_board.firstPlayer())) score *= 0.8;
     	return score;
     }
     
@@ -475,6 +484,14 @@ public class StudentPlayer extends PentagoPlayer {
 			int _x = list[i][0];
 			int _y = list[i][1];
 			switch (num) {
+			case 1:
+				if (board[_x][_y].getStatus(statusIdx)[0] == 3 && board[_x][_y].piece == target) {	// having 2 instance of 2 in a row
+					count+=2;
+				}
+				if (board[_x][_y].getStatus(statusIdx)[0] == 2 && board[_x][_y].piece == target) {	// having 2 instance of 2 in a row
+					count+=1;
+				}
+				break;
 			case 2:
 				if (board[_x][_y].getStatus(statusIdx)[0] == 2 && board[_x][_y].piece == target) {	// having 2 instance of 2 in a row
 					count+=2;
@@ -625,6 +642,13 @@ public class StudentPlayer extends PentagoPlayer {
     	//System.out.println("depth: " + depth);
     	
     	if (depth == maxDepth) return new MoveValue(evaluateBoardState(boardState), null);
+    	
+    	if (boardState.getWinner() == player_id) {
+			return new MoveValue(WIN_VALUE, null);
+		}
+		else if (boardState.getWinner() == 1 - player_id) {
+			return new MoveValue(LOSE_VALUE, null);
+		}
     	
     	if (boardState.gameOver()) return new MoveValue(0, null);
     	
