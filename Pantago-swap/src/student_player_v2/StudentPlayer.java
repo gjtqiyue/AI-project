@@ -467,10 +467,10 @@ public class StudentPlayer extends PentagoPlayer {
     	for (int i=0; i<list.length; i++) {
 			int _x = list[i][0];
 			int _y = list[i][1];
-			if (board[_x][_y].getStatus(statusIdx)[0] > (3-num) && board[_x][_y].piece == target) {	// 3 in a row we have defend for minimum 1, 2 to 2
+			if (board[_x][_y].getStatus(statusIdx)[0] >= (3-num) && board[_x][_y].piece == target) {	// 3 in a row we have defend for minimum 1, 2 to 2
 				count+=1;
 			}
-			if (board[_x][_y].getStatus(statusIdx)[1] > 0 && board[_x][_y].piece == target) {
+			else if (board[_x][_y].getStatus(statusIdx)[0] >= (3-num) && board[_x][_y].getStatus(statusIdx)[1] > 0 && board[_x][_y].piece == target) {
 				count+=0.5;
 			}
 		}
@@ -764,7 +764,7 @@ public class StudentPlayer extends PentagoPlayer {
     	final LinkedList<MoveValue> candidateMoves = new LinkedList<MoveValue>();
     	final int time_out = boardState.getTurnNumber() == 0 ? FIRST_MOVE_TIMELIMIT : MOVE_TIMELIMIT;
     	
-    	final MoveValue moveV = null;
+    	System.out.println("Current board evaluation: " + evaluateBoardState(boardState));
     	
     	Move myMove = null;
     	
@@ -775,7 +775,7 @@ public class StudentPlayer extends PentagoPlayer {
     			}
     		}
     	}
-//    	else if (boardState.getTurnNumber() > 15) {
+//    	else if (boardState.getTurnNumber() < 5) {
 //    		myMove = MonteCarloSearch(boardState);
 //    	}
     	else {
@@ -830,8 +830,6 @@ public class StudentPlayer extends PentagoPlayer {
     			if (candidateMoves.size() > 0) {
     				myMove = candidateMoves.get(0).move;
 	    			System.out.println("Value of the final move move: " + candidateMoves.get(0).value);
-	    	        System.out.println("max " + max_prun + ", min " + min_prun);
-	    	        System.out.println("depth " + depth);
     			}
 			}
     		catch (InterruptedException | ExecutionException e) {
@@ -844,8 +842,6 @@ public class StudentPlayer extends PentagoPlayer {
     		
     		myMove = candidateMoves.get(0).move;
 			System.out.println("Value of the final move move: " + candidateMoves.get(0).value);
-	        System.out.println("max " + max_prun + ", min " + min_prun);
-	        System.out.println("depth " + depth);
 	        
     	}
     	
