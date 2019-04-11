@@ -1,4 +1,4 @@
-package student_player_v3;
+package student_player_Bessie;
 
 import boardgame.Board;
 import boardgame.Move;
@@ -8,10 +8,10 @@ import java.util.LinkedList;
 import java.lang.*;
 
 import pentago_swap.PentagoPlayer;
+import student_player_Bessie.BessieV3.Direction;
 import pentago_swap.PentagoBoardState;
 import pentago_swap.PentagoBoardState.Piece;
 import student_player_MonteCarlo.StudentPlayer.Node;
-import student_player_v3.StudentPlayer.Direction;
 import pentago_swap.PentagoMove;
 
 public class MyTools {

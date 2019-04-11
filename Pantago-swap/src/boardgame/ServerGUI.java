@@ -44,7 +44,9 @@ public class ServerGUI extends JFrame implements BoardPanel.BoardPanelListener {
     		"student_player_v1.StudentPlayer",
     		"student_player_percy.StudentPlayer_V3",
     		"student_player_v2.StudentPlayer",
-    		"student_player_v3.StudentPlayer"
+    		"student_player_Bessie.BessieV3",
+    		"student_player_zero.StudentPlayer",
+    		
     		};
     private static final int BOARD_SIZE = 800;
     private static final int LIST_WIDTH = 280;

@@ -28,6 +28,7 @@ import pentago_swap.PentagoBoardState.Piece;
 import pentago_swap.PentagoBoardState.Quadrant;
 import student_player_MonteCarlo.StudentPlayer.Node;
 import student_player_MonteCarlo.StudentPlayer.SearchTree;
+import student_player_v1.StudentPlayer.MoveValue;
 import pentago_swap.PentagoMove;
 
 /** A player file submitted by a student. */
@@ -35,8 +36,8 @@ public class StudentPlayer extends PentagoPlayer {
 	
 	public static final int WIN_VALUE = Integer.MAX_VALUE-1;
 	public static final int LOSE_VALUE = Integer.MIN_VALUE+1;
-	public static final int FIRST_MOVE_TIMELIMIT = 29950;
-	public static final int MOVE_TIMELIMIT = 1950;
+	public static final int FIRST_MOVE_TIMELIMIT = 29000;
+	public static final int MOVE_TIMELIMIT = 1670;
 	public static long max_prun = 0;
 	public static long min_prun = 0;
 	public static long start_time;
@@ -358,112 +359,198 @@ public class StudentPlayer extends PentagoPlayer {
     }
     
     private double evaluatePiece(Node n, Node[][] board, Direction dir, int[] status, Piece player, Piece oppo) {
-    	double score = 0;
-    	double baseScore = 1;
-    	double centerFactor = 1;
-    	double chainFactor = 1;
-    	double swapFactor = 1;
-    	
-    	if (numInARow(n, 4, dir)) {
-    		if (status[2] == 2) {chainFactor = 4;}	//all blocked by wall
-    		else if (status[1] == 2) {chainFactor = 10;}	//all blocked by player
-    		else if (status[1] == 1 && status[2] == 1) { 
-    			// check if we can swap it
-    			chainFactor = 12;
-    			int x = checkPotentialSwapKill(n, dir, board, 3, player);
-    			if (x > 1)
-    				swapFactor = x;
-    			else
-    				swapFactor = 1;
-    		} 
-    		else {return 10000;}
-			//System.out.println("four in a row:" + chainFactor * centerFactor * swapFactor * baseScore);
-			//markNodes(n.xPos, n.yPos, 4, board, dir);
-		}
-		else if (numInARow(n, 3, dir)) {
-			chainFactor = 5;
-			
-			// is in the center?
-			if (isInTheCenter(n, dir)) {
-	    		centerFactor = 2; // a temporary factor
+    	if (MyPiece(cur_board.firstPlayer()) == Piece.BLACK) {
+    		//System.out.println("after");
+	    	double score = 0;
+	    	double baseScore = 1;
+	    	double centerFactor = 1;
+	    	double chainFactor = 1;
+	    	double swapFactor = 1;
+	    	
+	    	if (numInARow(n, 4, dir)) {
+	    		if (status[2] == 2) {chainFactor = 4;}	//all blocked by wall
+	    		else if (status[1] == 2) {chainFactor = 6;}	//all blocked by player
+	    		else if (status[1] == 1 && status[2] == 1) { 
+	    			// check if we can swap it
+	    			chainFactor = 10;
+	//    			double x = checkPotentialSwapKill(n, dir, board, 3, player);
+	//    			if (x > 1)
+	//    				swapFactor = x;
+	//    			else
+	//    				swapFactor = 1;
+	    		} 
+	    		else {return 12;}
+				//System.out.println("four in a row:" + chainFactor * centerFactor * swapFactor * baseScore);
+				//markNodes(n.xPos, n.yPos, 4, board, dir);
 			}
-			else {
-				centerFactor = 1;
+			else if (numInARow(n, 3, dir)) {
+				chainFactor = 5;
+				
+				// is in the center?
+				if (isInTheCenter(n, dir)) {
+		    		centerFactor = 1; // a temporary factor
+				}
+				else {
+					centerFactor = 1;
+				}
+				
+				if (status[1] == 0 && status[2] == 1) {	// not blocked by any opponent pieces, good
+					chainFactor=6;
+				}
+				if (status[1] == 1 && status[2] == 0) {	// one side is blocked by player but the other side is not
+					chainFactor=4;
+				}
+				// check for instant swap kill
+				double x = checkPotentialSwapKill(n, dir, board, 3, player);
+				if (x > 1)
+					swapFactor = x/2;
+				else
+					swapFactor = 1;
+				//System.out.println("three in a row:" + chainFactor * centerFactor * swapFactor * baseScore);
+				//markNodes(n.xPos, n.yPos, 3, board, dir);
 			}
-			
-			if (status[2] > 1) {	// blocked by walls, good
-				chainFactor++;
+			else if (numInARow(n, 2, dir)) {
+				if (isInTheCenter(n, dir)) {
+					centerFactor = 2;
+				}
+				else {
+					centerFactor = 1;
+				}
+				
+				if (status[1] > 0) {	//player
+					chainFactor = 0.5;
+				}
+				else if (status[2] == 2) {	//wall
+					chainFactor = 1.5;
+				}
+				else {
+					chainFactor = 2.5;
+				}
+				
+				double x = checkPotentialSwapKill(n, dir, board, 2, player);
+				if (x > 1) {
+					//System.out.println("Swap kill 2");
+					swapFactor = x/2;
+				}
+				else
+					swapFactor = 1;
+				//System.out.println("two in a row:" + chainFactor * centerFactor * swapFactor * baseScore);
+				//markNodes(n.xPos, n.yPos, 2, board, dir);
 			}
-			if (status[1] == 0) {	// not blocked by any opponent pieces, not good
-				chainFactor+=2;
+			else if (numInARow(n, 1, dir)) {
+				if (isInTheCenter(n, dir)) {
+					centerFactor = 2;
+				}
+				else {
+					centerFactor = 1;
+				}
+				
+				double x = checkPotentialSwapKill(n, dir, board, 1, player);
+				if (x > 1) {
+					//System.out.println("Swap kill 2");
+					swapFactor = x/2;
+				}
+				else
+					swapFactor = 1;
+				//System.out.println("one in a row:" + chainFactor * centerFactor * swapFactor * baseScore);
+				//markNodes(n.xPos, n.yPos, 1, board, dir);
 			}
-			if (status[1] == 1 && status[2] == 1) {
-				chainFactor-=2;
-			}
-			if (status[1] == 1 && status[2] == 0) {	// one side is blocked by player but the other side is not
-				chainFactor=4;
-			}
-			// check for instant swap kill
-			int x = checkPotentialSwapKill(n, dir, board, 3, player);
-			if (x > 1)
-				swapFactor = x;
-			else
-				swapFactor = 1;
-			//System.out.println("three in a row:" + chainFactor * centerFactor * swapFactor * baseScore);
-			//markNodes(n.xPos, n.yPos, 3, board, dir);
-		}
-		else if (numInARow(n, 2, dir)) {
-			if (isInTheCenter(n, dir)) {
-				centerFactor = 1;
-			}
-			else {
-				centerFactor = 1;
-			}
-			
-			if (status[1] > 0) {	//player
-				chainFactor = 0.2;
-			}
-			else if (status[2] == 2) {	//wall
-				chainFactor = 2.5;
-			}
-			else {
-				chainFactor = 3;
-			}
-			
-			int x = checkPotentialSwapKill(n, dir, board, 2, player);
-			if (x > 1) {
-				//System.out.println("Swap kill 2");
-				swapFactor = x;
-			}
-			else
-				swapFactor = 1;
-			//System.out.println("two in a row:" + chainFactor * centerFactor * swapFactor * baseScore);
-			//markNodes(n.xPos, n.yPos, 2, board, dir);
-		}
-		else if (numInARow(n, 1, dir)) {
-			if (isInTheCenter(n, dir)) {
-				centerFactor = 1;
-			}
-			else {
-				centerFactor = 1;
-			}
-			
-			int x = checkPotentialSwapKill(n, dir, board, 1, player);
-			if (x > 1) {
-				//System.out.println("Swap kill 2");
-				swapFactor = x;
-			}
-			else
-				swapFactor = 1;
-			//System.out.println("one in a row:" + chainFactor * centerFactor * swapFactor * baseScore);
-			//markNodes(n.xPos, n.yPos, 1, board, dir);
-		}
-    	
-    	// check for potential instant kill
-    	
-    	score = chainFactor * centerFactor * swapFactor * baseScore;
-    	if (player == MyPiece(cur_board.firstPlayer())) score *= 0.8;
-    	return score;
+	    	
+	    	// check for potential instant kill
+	    	
+	    	score = chainFactor * centerFactor * swapFactor * baseScore;
+	    	if (player == MyPiece(cur_board.firstPlayer())) score *= 0.8;
+	    	return score;
+    	}
+    	else {
+    		//System.out.println("first");
+    		double score = 0;
+        	double baseScore = 1;
+        	double centerFactor = 1;
+        	double chainFactor = 1;
+        	double swapFactor = 1;
+        	
+        	if (numInARow(n, 4, dir)) {
+        		if (status[2] == 2) {chainFactor = 4;}	//all blocked by wall
+        		else if (status[1] == 2) {chainFactor = 7;}	//all blocked by player
+        		else if (status[1] == 1 && status[2] == 1) { 
+        			// check if we can swap it
+        			chainFactor = 8;
+//        			if (checkPotentialSwapKill(n, dir, board, 3, target))
+//        				swapFactor = 2;
+//        			else
+//        				swapFactor = 1;
+        		} 
+        		else {chainFactor = 10;}
+    			//System.out.println("four in a row:" + chainFactor * centerFactor * swapFactor * baseScore);
+    			//markNodes(n.xPos, n.yPos, 4, board, dir);
+    		}
+    		else if (numInARow(n, 3, dir)) {
+    			chainFactor = 5;
+    			
+    			// is in the center?
+    			if (isInTheCenter(n, dir)) {
+    	    		centerFactor = 2; // a temporary factor
+    			}
+    			else {
+    				centerFactor = 1;
+    			}
+    			
+    			if (status[2] > 0) {
+    				chainFactor = 6;
+    			}
+    			else {
+    				chainFactor = 5;
+    			}
+    			// check for instant swap kill
+//    			if (checkPotentialSwapKill(n, dir, board, 3, target))
+//    				swapFactor = 2;
+//    			else
+//    				swapFactor = 1;
+    			//System.out.println("three in a row:" + chainFactor * centerFactor * swapFactor * baseScore);
+    			//markNodes(n.xPos, n.yPos, 3, board, dir);
+    		}
+    		else if (numInARow(n, 2, dir)) {
+    			if (isInTheCenter(n, dir)) {
+    				centerFactor = 2;
+    			}
+    			else {
+    				centerFactor = 1;
+    			}
+    			
+    			if (status[1] > 0) {	//player
+    				chainFactor = 2;
+    			}
+    			else if (status[2] == 2) {	//wall
+    				chainFactor = 2.5;
+    			}
+    			else {
+    				chainFactor = 3;
+    			}
+    			
+//    			if (checkPotentialSwapKill(n, dir, board, 2, target))
+//    				swapFactor = 1;
+//    			else
+//    				swapFactor = 1;
+    			//System.out.println("two in a row:" + chainFactor * centerFactor * swapFactor * baseScore);
+    			//markNodes(n.xPos, n.yPos, 2, board, dir);
+    		}
+    		else if (numInARow(n, 1, dir)) {
+    			if (isInTheCenter(n, dir)) {
+    				centerFactor = 2;
+    			}
+    			else {
+    				centerFactor = 1;
+    			}
+    			//System.out.println("one in a row:" + chainFactor * centerFactor * swapFactor * baseScore);
+    			//markNodes(n.xPos, n.yPos, 1, board, dir);
+    		}
+        	
+        	// check for potential instant kill
+        	
+        	score = chainFactor * centerFactor * swapFactor * baseScore;
+        	return score;
+    	}
     }
     
     public static int[][] diagonalFirstCheckList = { {1,1},{1,4},{4,1},{4,4} };
@@ -478,8 +565,8 @@ public class StudentPlayer extends PentagoPlayer {
     
     public static int[][] leftDiagonalSecondCheckList = { {1,0},{0,1},{1,3},{0,4},{4,0},{3,1},{4,3},{3,4} };
     
-    private int countMatching(int[][] list, int statusIdx, int num, Piece target, Node[][] board) {
-    	int count = 1;
+    private double countMatching(int[][] list, int statusIdx, int num, Piece target, Node[][] board) {
+    	double count = 0;
     	for (int i=0; i<list.length; i++) {
 			int _x = list[i][0];
 			int _y = list[i][1];
@@ -494,13 +581,13 @@ public class StudentPlayer extends PentagoPlayer {
 				break;
 			case 2:
 				if (board[_x][_y].getStatus(statusIdx)[0] == 2 && board[_x][_y].piece == target) {	// having 2 instance of 2 in a row
-					count+=2;
+					count+=3;
 				}
 				else if (board[_x][_y].getStatus(statusIdx)[0] == 1 && board[_x][_y].piece == target) {	
 					count+=1;
 				}
 				if (board[_x][_y].getStatus(statusIdx)[1] > 0 && board[_x][_y].piece == target) {
-					count-=1;
+					count=0.5;
 				}
 				break;
 			case 3:
@@ -508,7 +595,7 @@ public class StudentPlayer extends PentagoPlayer {
 					count+=2;
 				}
 				else if (board[_x][_y].getStatus(statusIdx)[0] == 1 && board[_x][_y].piece == target) {
-					count+=1;
+					count=0.5;
 				}
 //				if (board[_x][_y].getStatus(statusIdx)[1] > 0 && board[_x][_y].piece == target) {
 //					count-=1;
@@ -519,57 +606,30 @@ public class StudentPlayer extends PentagoPlayer {
     	return count;
     }
     
-    private int checkPotentialSwapKill(Node n, Direction d, Node[][] board, int num, Piece target){
-    	int count = 0;
+    private double checkPotentialSwapKill(Node n, Direction d, Node[][] board, int num, Piece target){
+    	double count = 0;
     	switch (d) {
     	case Vertical:
     		if (n.yPos == 0 || n.yPos == 3) count = countMatching(verticalLeftCheckList, 1, num, target, board);
     		else if (n.yPos == 1 || n.yPos == 4) count = countMatching(verticalMiddleCheckList, 1, num, target, board);
     		else if (n.yPos == 2 || n.yPos == 5) count = countMatching(verticalRightCheckList, 1, num, target, board);
-    		return count * 10 + 1;
+    		return count * 5 + 1;
     	case Horizontal:
     		if (n.xPos == 0 || n.xPos == 3) count = countMatching(horizontalTopCheckList, 2, num, target, board);
     		else if (n.xPos == 1 || n.xPos == 4) count = countMatching(horizontalMiddleCheckList, 2, num, target, board);
     		else if (n.xPos == 2 || n.xPos == 5) count = countMatching(horizontalBottomCheckList, 2, num, target, board);
-    		return count * 10 + 1;
+    		return count * 5 + 1;
     	case LeftD:
     		count = countMatching(diagonalFirstCheckList, 3, num, target, board);
-    		return count * 10 + 1;
+    		return count * 5 + 1;
     	case RightD:
     		count = countMatching(diagonalFirstCheckList, 4, num, target, board);
-    		return count * 10 + 1;
+    		return count * 5 + 1;
     	default:
     		break;
     	}
     	return 0;
     }
-    
-//    private void markNodes(int x, int y, int count, Node[][] board, Direction d) {
-//    	switch (d) {
-//    	case Vertical:
-//    		for (int i=0; i<count; i++) {
-//    			board[x+i][y].verticalStatus[3] = 1;
-//    		}
-//    		break;
-//    	case Horizontal:
-//    		for (int i=0; i<count; i++) {
-//    			board[x][y+i].horizontalStatus[3] = 1;
-//    		}
-//    		break;
-//    	case LeftD:
-//    		for (int i=0; i<count; i++) {
-//    			board[x+i][y+i].leftDiagonalStatus[3] = 1;
-//    		}
-//    		break;
-//    	case RightD:
-//    		for (int i=0; i<count; i++) {
-//    			board[x+i][y-i].rightDiagonalStatus[3] = 1;
-//    		}
-//    		break;
-//    	default:
-//    		break;
-//    	}
-//    }
     
     private boolean isInTheCenter(Node n, Direction d) {
     	if (n.isSinglePiece) {
@@ -652,41 +712,43 @@ public class StudentPlayer extends PentagoPlayer {
     	
     	if (boardState.gameOver()) return new MoveValue(0, null);
     	
-    	// we want to sort all the move with its evaluation before doing a-b pruning
-    	PriorityQueue<StateEval> queue;
-    	Comparator<StateEval> comparator;
-    	if (pre_move != null && depth == 0) {
-    		comparator = new Comparator<StateEval>() {
-    			// it is a priority queue, but we want the biggest on the top 
-				@Override
-				public int compare(StateEval o1, StateEval o2) {
-					//neg if o1 < o2, pos if o1 > o2
-					if (o2.move == pre_move) return LOSE_VALUE+1;
-					else if (o1.move == pre_move) return WIN_VALUE-1;
-					else return (int)(o2.value - o1.value);
-				}
-    		};
-    	}
-    	else if (isMyTurn) {
-    		comparator = new Comparator<StateEval>() {
-    			// it is a priority queue, but we want the biggest on the top 
-				@Override
-				public int compare(StateEval o1, StateEval o2) {
-					//neg if o1 < o2, pos if o1 > o2
-					return (int)(o2.value - o1.value);
-				}
-    		};
-    	}
-    	else {
-    		comparator = new Comparator<StateEval>() {
-    			// it is a priority queue, but we want the biggest on the top 
-				@Override
-				public int compare(StateEval o1, StateEval o2) {
-					//neg if o1 < o2, pos if o1 > o2
-					return (int)(o1.value - o2.value);
-				}
-    		};
-    	}
+    	if (depth < 3) {
+    	
+	    	// we want to sort all the move with its evaluation before doing a-b pruning
+	    	PriorityQueue<StateEval> queue;
+	    	Comparator<StateEval> comparator;
+	    	if (pre_move != null && depth == 0) {
+	    		comparator = new Comparator<StateEval>() {
+	    			// it is a priority queue, but we want the biggest on the top 
+					@Override
+					public int compare(StateEval o1, StateEval o2) {
+						//neg if o1 < o2, pos if o1 > o2
+						if (o2.move == pre_move) return LOSE_VALUE+1;
+						else if (o1.move == pre_move) return WIN_VALUE-1;
+						else return (int)(o2.value - o1.value);
+					}
+	    		};
+	    	}
+	    	else if (isMyTurn) {
+	    		comparator = new Comparator<StateEval>() {
+	    			// it is a priority queue, but we want the biggest on the top 
+					@Override
+					public int compare(StateEval o1, StateEval o2) {
+						//neg if o1 < o2, pos if o1 > o2
+						return (int)(o2.value - o1.value);
+					}
+	    		};
+	    	}
+	    	else {
+	    		comparator = new Comparator<StateEval>() {
+	    			// it is a priority queue, but we want the biggest on the top 
+					@Override
+					public int compare(StateEval o1, StateEval o2) {
+						//neg if o1 < o2, pos if o1 > o2
+						return (int)(o1.value - o2.value);
+					}
+	    		};
+	    	}
     	
     	ArrayList<PentagoMove> options = boardState.getAllLegalMoves();
     	
@@ -794,6 +856,86 @@ public class StudentPlayer extends PentagoPlayer {
     		}
     		return bestValue;
     	}
+    	}
+    	else {
+    		ArrayList<PentagoMove> options = boardState.getAllLegalMoves();
+        	MoveValue bestValue = null;
+    		if (isMyTurn) {	//max player
+        		//sort the moves based on the evaluation function (max first)
+        		
+        		//max
+        		for (PentagoMove move : options) {
+        			//apply this move and get a new boardstate
+        			PentagoBoardState newState = (PentagoBoardState)boardState.clone();
+        			newState.processMove(move);
+        			
+        			if (newState.getWinner() == player_id) {
+        				return new MoveValue(WIN_VALUE, move);
+        			}
+        			
+        			MoveValue result = MiniMax(depth+1, maxDepth, alpha, beta, newState, move);
+        			
+        			// if the best value so far is null we assign the first return value to it
+        			if (bestValue == null || (result.value > bestValue.value)) {
+        				bestValue = result;
+        				bestValue.move = move;
+        			}
+        			
+        			//alpha = Math.max(alpha, result.value);
+        			
+        			if (alpha < result.value) {
+        				//update the best move
+        				alpha = result.value;
+        				bestValue = result;
+        			}
+        			
+        			if (alpha >= beta) {	// pruning
+        				max_prun++;
+        				bestValue.value = beta;
+        				bestValue.move = null;
+        				return bestValue;
+        			}
+        		}
+        		return bestValue;
+        	}
+        	else {
+        		//sort the moves based on the evaluation function (min first)
+        		//min
+        		for (PentagoMove move : options) {
+        			//apply this move and get a new boardstate
+        			PentagoBoardState newState = (PentagoBoardState)boardState.clone();
+        			newState.processMove(move);
+        			
+        			if (newState.getWinner() == 1 - player_id) {
+        				return new MoveValue(LOSE_VALUE, move);
+        			}
+        			MoveValue result = MiniMax(depth+1, maxDepth, alpha, beta, newState, move);    			
+        			
+        			if (bestValue == null || (result.value < bestValue.value)) {
+        				bestValue = result;
+        				bestValue.move = move;
+        			}
+        			
+        			//alpha = Math.max(alpha, result.value);
+        			
+        			if (beta > result.value) {
+        				//update the best move
+        				beta = result.value;
+        				bestValue = result;
+        			}
+        			
+        			if (alpha >= beta) {
+        				min_prun++;
+        				bestValue.value = alpha;
+        				bestValue.move = null;
+        				return bestValue;
+        			}
+        			
+        		}
+        		return bestValue;
+        	}
+    	}
+    
     }
     
     public static int[][] centerCoord = { {1,1},{1,4},{4,1},{4,4} };
