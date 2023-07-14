@@ -1,9 +1,9 @@
-Comp424 AI project
+## AI project ## 
 
-Game: Pentago-Swap
+**Game**: Pentago-Swap
 
-Class tournament rank: 10/289
+Class tournament rank: **10/289**
 
-Read project description and code description for further details on the project
+Read the project description and code description for further details on the project.
 
-Read AI report for implementation details
+Read the AI report for implementation details.
